@@ -1,26 +1,37 @@
 import MDEditor from "@uiw/react-md-editor";
 import "@uiw/react-md-editor/markdown-editor.css";
+import { writeContract } from "@wagmi/core";
 import React, { useState } from "react";
 import toast from "react-hot-toast";
 import rehypeSanitize from "rehype-sanitize";
+import { questifyABI } from "../../abi/questifyABI"; // Import your ABI
 import "../../App.css";
 import LeftSidebar from "../../components/LeftSidebar/LeftSidebar";
+import { config } from "../../config";
+import { questifyAddress } from "../../constants"; // Import your contract address
 
 const AskQuestion = () => {
   const [questionTitle, setQuestionTitle] = useState("");
   const [questionBody, setQuestionBody] = useState("");
   const [questionTags, setQuestionTags] = useState<string[]>([]);
 
-  const printQuestionBody = (questionBody: string): void => {
-    console.log(questionBody);
-  };
+  // const printQuestionBody = (questionBody: string): void => {
+  //   console.log(questionBody);
+  // };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (questionTitle && questionBody && questionTags.length) {
+      writeContract(config, {
+        address: questifyAddress,
+        abi: questifyABI,
+        functionName: "postQuestion",
+        args: [questionTitle, questionTags, questionBody],
+      });
       toast.success("Question posted successfully");
     } else toast.error("Please enter value in all the fields");
   };
+
   return (
     <div className="home-container-1 ">
       <LeftSidebar />
@@ -64,9 +75,6 @@ const AskQuestion = () => {
                       height={300}
                       className="rounded-xl"
                     />
-                    <button onClick={() => printQuestionBody(questionBody)}>
-                      Print
-                    </button>
                   </label>
                   <label htmlFor="ask-ques-tags" className="block">
                     <h4 className="text-lg font-medium text-gray-700">Tags</h4>

@@ -1,12 +1,71 @@
-import { useState } from "react";
+import { readContract, writeContract } from "@wagmi/core";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { IoClose } from "react-icons/io5";
 import { Link } from "react-router-dom";
+import { useAccount } from "wagmi";
+import { questifyABI } from "../../abi/questifyABI";
 import bars from "../../assets/bars-solid.svg";
-// import logo from "../../assets/logo.png";
-import search from "../../assets/search-solid.svg";
+import { config } from "../../config";
+import { questifyAddress } from "../../constants";
 
 const Navbar = () => {
   const [isNavOpen, setIsNavOpen] = useState(false);
+  const { address } = useAccount();
+  const [userStats, setUserStats] = useState({
+    totalEarned: 0,
+    totalWithdrawn: 0,
+    currentBalance: 0,
+  });
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Fetch user stats from the blockchain
+  useEffect(() => {
+    const fetchUserStats = async () => {
+      if (address) {
+        try {
+          const stats = await readContract(config, {
+            address: questifyAddress,
+            abi: questifyABI,
+            functionName: "getUserStats",
+            args: [address],
+          });
+          setUserStats({
+            totalEarned: Number((stats as [number, number, number])[0]),
+            totalWithdrawn: Number((stats as [number, number, number])[1]),
+            currentBalance: Number((stats as [number, number, number])[2]),
+          });
+        } catch (error) {
+          console.error("Error fetching user stats:", error);
+        }
+      }
+    };
+
+    fetchUserStats();
+  }, [address]);
+
+  // Handle withdrawing tokens
+  const handleWithdraw = async () => {
+    if (!address) {
+      toast.error("Please connect your wallet to withdraw tokens");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await writeContract(config, {
+        address: questifyAddress,
+        abi: questifyABI,
+        functionName: "withdrawTokens",
+      });
+      toast.success("Tokens withdrawn successfully");
+    } catch (error) {
+      console.error("Withdrawal failed:", error);
+      toast.error("Failed to withdraw tokens");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <nav className="bg-white shadow-md">
@@ -17,30 +76,33 @@ const Navbar = () => {
         </button>
         <div className="flex items-center space-x-4">
           <Link to="/" className="flex items-center">
-            {/* <img src={logo} alt="logo" className="h-8" /> */}
             <span className="questify-logo text-2xl font-bold text-gray-800 ml-2">
               Questify
             </span>
           </Link>
-          <Link
-            className="hidden lg:block text-sm text-gray-700 hover:text-blue-500 transition duration-200"
-            to="/"
-          >
-            Community
-          </Link>
-          <button className="hidden lg:block text-sm text-gray-700 hover:text-blue-500 transition duration-200">
-            Chatbot
-          </button>
         </div>
         <div className="flex items-center space-x-4">
-          <form className="hidden lg:flex items-center bg-gray-100 rounded-full px-3 py-1">
-            <input
-              type="text"
-              placeholder="Search..."
-              className="bg-transparent text-sm text-gray-600 focus:outline-none"
-            />
-            <img src={search} alt="Search" className="w-4 h-4 ml-2" />
-          </form>
+          {/* Token Balance and Withdraw Button */}
+          {address && (
+            <div className="hidden lg:flex items-center space-x-4">
+              <div className="bg-gray-50 p-2 rounded-lg">
+                <p className="text-sm text-gray-700">
+                  Balance: {userStats.currentBalance} tokens
+                </p>
+              </div>
+              <button
+                onClick={handleWithdraw}
+                disabled={isLoading || userStats.currentBalance === 0}
+                className={`px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200 ${
+                  isLoading || userStats.currentBalance === 0
+                    ? "opacity-50 cursor-not-allowed"
+                    : ""
+                }`}
+              >
+                {isLoading ? "Withdrawing..." : "Withdraw"}
+              </button>
+            </div>
+          )}
           <div className="flex bg-slate-50 rounded-full">
             <appkit-button />
           </div>
@@ -90,6 +152,28 @@ const Navbar = () => {
                 Users
               </Link>
             </div>
+
+            {/* Token Balance and Withdraw Button for Mobile */}
+            {address && (
+              <div className="mt-6">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-700">
+                    Balance: {userStats.currentBalance} tokens
+                  </p>
+                  <button
+                    onClick={handleWithdraw}
+                    disabled={isLoading || userStats.currentBalance === 0}
+                    className={`w-full mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200 ${
+                      isLoading || userStats.currentBalance === 0
+                        ? "opacity-50 cursor-not-allowed"
+                        : ""
+                    }`}
+                  >
+                    {isLoading ? "Withdrawing..." : "Withdraw"}
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Add some extra padding or space at the bottom for better spacing */}
             <div className="flex-grow" />

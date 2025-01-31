@@ -1,107 +1,185 @@
 import MDEditor from "@uiw/react-md-editor";
-import "@uiw/react-md-editor/markdown-editor.css";
+import { readContract, writeContract } from "@wagmi/core";
 import moment from "moment";
-// import toast from "react-hot-toast";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { BiSolidDownvote, BiSolidUpvote } from "react-icons/bi";
 import { TfiSharethis } from "react-icons/tfi";
-// import { useDispatch, useSelector } from "react-redux";
-import { Link, useParams } from "react-router-dom";
-// import { deleteAnswer } from "../../actions/question";
+import { useAccount } from "wagmi";
+import { questifyABI } from "../../abi/questifyABI";
 import Avatar from "../../components/Avatar/Avatar";
+import { config } from "../../config";
+import { questifyAddress } from "../../constants";
 
 interface Answer {
-  _id: string;
-  userId: string;
-  userAnswered: string;
-  answeredOn: string;
-}
-
-interface Question {
-  answer: Answer[];
-  questionBody: string;
-  noOfAnswers: number;
+  id: bigint;
+  content: string;
+  author: string;
+  upvotes: bigint;
+  downvotes: bigint;
+  timestamp: bigint;
 }
 
 interface DisplayAnswerProps {
-  question: Question;
-  handleShare: () => void;
+  answers: Answer[];
+  onVoteSuccess: () => void; // Callback to refresh data after voting
 }
 
 const DisplayAnswer: React.FC<DisplayAnswerProps> = ({
-  question,
-  handleShare,
+  answers,
+  onVoteSuccess,
 }) => {
-  // const dispatch = useDispatch();
-  // const User = useSelector((state: RootState) => state.currentUserReducer);
-  const { id } = useParams<{ id: string }>();
-  console.log(id);
+  const { address } = useAccount();
+  const [voteStatus, setVoteStatus] = useState<{ [key: string]: boolean }>({});
+  const [loadingStates, setLoadingStates] = useState<{
+    [key: string]: boolean;
+  }>({});
 
-  // const handleDelete = (answerId: string, noOfAnswers: number) => {
-  //   // dispatch(deleteAnswer(id, answerId, noOfAnswers - 1));
-  //   toast.success("Answer deleted");
-  // };
+  // Check vote status for all answers when address changes
+  useEffect(() => {
+    const checkVotes = async () => {
+      const status: { [key: string]: boolean } = {};
+      for (const answer of answers) {
+        if (address) {
+          try {
+            const hasVoted = await readContract(config, {
+              address: questifyAddress,
+              abi: questifyABI,
+              functionName: "hasUserVotedOnAnswer",
+              args: [address, answer.id],
+            });
+            status[answer.id.toString()] = hasVoted as boolean;
+          } catch (error) {
+            console.error("Error checking vote status:", error);
+            status[answer.id.toString()] = false;
+          }
+        }
+      }
+      setVoteStatus(status);
+    };
+
+    checkVotes();
+  }, [address, answers]);
+
+  const handleVote = async (answerId: bigint, isUpvote: boolean) => {
+    if (!address) {
+      toast.error("Please connect your wallet to vote");
+      return;
+    }
+
+    setLoadingStates((prev) => ({ ...prev, [answerId.toString()]: true }));
+
+    try {
+      await writeContract(config, {
+        address: questifyAddress,
+        abi: questifyABI,
+        functionName: "voteAnswer",
+        args: [answerId, isUpvote],
+      });
+
+      // Update local vote status immediately
+      setVoteStatus((prev) => ({
+        ...prev,
+        [answerId.toString()]: true,
+      }));
+
+      // Trigger data refresh in parent component
+      onVoteSuccess();
+      toast.success(
+        `Answer ${isUpvote ? "upvoted" : "downvoted"} successfully`
+      );
+    } catch (error) {
+      console.error("Voting failed:", error);
+      toast.error(`Failed to ${isUpvote ? "upvote" : "downvote"} answer`);
+    } finally {
+      setLoadingStates((prev) => ({ ...prev, [answerId.toString()]: false }));
+    }
+  };
+
+  const getNetVotes = (answer: Answer) => {
+    return Number(answer.upvotes) - Number(answer.downvotes);
+  };
 
   return (
-    <div className="">
-      {question.answer.map((ans) => (
-        <div className="p-4" key={ans._id}>
-          <div className="flex items-center gap-2 mt-4 sm:mt-0 justify-between">
-            <Link
-              to={`/Users/${ans.userId}`}
-              className="flex items-center gap-2 text-black hover:text-gray-700"
-            >
-              <Avatar
-                backgroundColor="lightgreen"
-                px="0.8rem"
-                py="0.3rem"
-                borderRadius="2rem"
-                fontSize="1.5rem"
-              >
-                {ans.userAnswered.charAt(0).toUpperCase()}
-              </Avatar>
-              <span className="font-medium text-gray-700">
-                {ans.userAnswered}
-              </span>
-            </Link>
-            <p className="text-gray-500 text-sm">
-              {" "}
-              {moment(ans.answeredOn).fromNow()}{" "}
-              <button
-                type="button"
-                onClick={handleShare}
-                className="text-black hover:text-gray-700 inline-flex items-center"
-              >
-                <TfiSharethis className="m-2" />
-              </button>
-            </p>
-          </div>
+    <div className="space-y-6">
+      {answers.map((answer) => {
+        const answerIdStr = answer.id.toString();
+        const hasVoted = voteStatus[answerIdStr] || false;
+        const isLoading = loadingStates[answerIdStr] || false;
 
-          <MDEditor.Markdown
-            source={question.questionBody}
-            style={{
-              whiteSpace: "pre-wrap",
-              backgroundColor: "white",
-              padding: "1rem",
-              borderRadius: "1rem",
-              marginTop: "1rem",
-            }}
-          />
-
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-4">
-            <div className="flex gap-4">
-              {/* {User?.result?._id === ans?.userId && (
-                <button
-                  type="button"
-                  onClick={() => handleDelete(ans._id, question.noOfAnswers)}
-                  className="text-black hover:text-gray-700"
+        return (
+          <div key={answerIdStr} className="bg-white p-4 rounded-lg shadow-md">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <Avatar
+                  backgroundColor="#f0f4ff"
+                  px="12px"
+                  py="6px"
+                  borderRadius="4px"
+                  fontSize="1rem"
                 >
-                  Delete
-                </button>
-              )} */}
+                  {answer.author.slice(2, 4).toUpperCase()}
+                </Avatar>
+                <div>
+                  <p className="font-medium text-gray-700">
+                    {answer.author.slice(0, 6)}...{answer.author.slice(-4)}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    {moment(Number(answer.timestamp) * 1000).fromNow()}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() =>
+                  navigator.clipboard.writeText(window.location.href)
+                }
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <TfiSharethis size={18} />
+              </button>
+            </div>
+
+            <MDEditor.Markdown
+              source={answer.content}
+              style={{
+                whiteSpace: "pre-wrap",
+                backgroundColor: "black",
+                padding: "1rem",
+                borderRadius: "1rem",
+              }}
+            />
+
+            <div className="flex items-center gap-4 mt-4">
+              <button
+                onClick={() => handleVote(answer.id, true)}
+                disabled={hasVoted || isLoading}
+                className={`flex items-center gap-2 px-3 py-1 rounded-md ${
+                  hasVoted
+                    ? "bg-gray-100 cursor-not-allowed"
+                    : "bg-blue-50 hover:bg-blue-100"
+                } ${isLoading ? "opacity-50 cursor-wait" : ""}`}
+              >
+                <BiSolidUpvote className="text-blue-600" />
+                <span className="font-medium text-gray-700">
+                  {getNetVotes(answer)}
+                </span>
+              </button>
+
+              <button
+                onClick={() => handleVote(answer.id, false)}
+                disabled={hasVoted || isLoading}
+                className={`px-3 py-1 rounded-md ${
+                  hasVoted
+                    ? "bg-gray-100 cursor-not-allowed"
+                    : "bg-red-50 hover:bg-red-100"
+                } ${isLoading ? "opacity-50 cursor-wait" : ""}`}
+              >
+                <BiSolidDownvote className="text-red-600" />
+              </button>
             </div>
           </div>
-          <hr />
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 };

@@ -2,6 +2,12 @@
 
 Questify is a blockchain-based community platform where users can ask and answer questions in various science and technology categories. The platform incentivize knowledge sharing by rewarding users with tokens for receiving likes on their answers.
 
+## Important Links
+
+- **Reward Token (ERC20):** [View on Blockscout](https://edu-chain-testnet.blockscout.com/token/0xF92F1f010c23Feb9cAFedC429243A248Fb843e65)
+
+- **Questify Contract Address:** [View on Blockscout](https://edu-chain-testnet.blockscout.com/address/0x7b50Ee0B4fb0E715fe560E6e932a2Ed806f6D639)
+
 ## Features
 
 - **Ask Questions:** Post questions across different categories in science and technology.

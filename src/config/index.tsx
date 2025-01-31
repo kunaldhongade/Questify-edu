@@ -7,6 +7,7 @@ import {
   mantleSepoliaTestnet,
   sepolia,
 } from "@reown/appkit/networks";
+import { cookieStorage, createStorage } from "@wagmi/core";
 
 // Get projectId from https://cloud.reown.com
 export const projectId = import.meta.env.VITE_PROJECT_ID;
@@ -55,6 +56,10 @@ export const networks = [
 
 //Set up the Wagmi Adapter (Config)
 export const wagmiAdapter = new WagmiAdapter({
+  storage: createStorage({
+    storage: cookieStorage,
+  }),
+  ssr: true,
   projectId,
   networks,
 });
