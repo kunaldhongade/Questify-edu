@@ -38,7 +38,7 @@ const LeftSidebar = () => {
         </NavLink>
 
         {/* Tags */}
-        <NavLink
+        {/* <NavLink
           to="/Tags"
           className={({ isActive }) =>
             `flex items-center pl-10 p-2 mb-4 rounded-lg transition ${
@@ -50,7 +50,7 @@ const LeftSidebar = () => {
         </NavLink>
 
         {/* Users */}
-        <NavLink
+        {/* <NavLink
           to="/Users"
           className={({ isActive }) =>
             `flex items-center pl-10 p-2 mb-4 rounded-lg transition ${
@@ -59,7 +59,7 @@ const LeftSidebar = () => {
           }
         >
           <p className="font-medium">Users</p>
-        </NavLink>
+        </NavLink> */}
       </nav>
     </div>
   );

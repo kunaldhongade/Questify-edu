@@ -1,6 +1,6 @@
 import moment from "moment";
-import { MdOutlineFavorite } from "react-icons/md";
-import { RiQuestionAnswerFill } from "react-icons/ri";
+// import { MdOutlineFavorite } from "react-icons/md";
+// import { RiQuestionAnswerFill } from "react-icons/ri";
 import { Link } from "react-router-dom";
 
 interface Question {
