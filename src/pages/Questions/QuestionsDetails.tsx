@@ -225,7 +225,7 @@ const QuestionsDetails = () => {
                 source={question.content}
                 style={{
                   whiteSpace: "pre-wrap",
-                  backgroundColor: "black",
+                  backgroundColor: "#212121",
                   padding: "1rem",
                   borderRadius: "1rem",
                 }}
@@ -269,7 +269,7 @@ const QuestionsDetails = () => {
                   </p>
                   <div className="flex items-center gap-2 text-blue-500 hover:underline">
                     <Avatar
-                      backgroundColor="bg-blue-100"
+                      backgroundColor="bg-blue-300"
                       fontSize="0.5"
                       px="7px"
                       py="5px"
@@ -280,7 +280,7 @@ const QuestionsDetails = () => {
                           copy(question.author);
                           toast.success("Author name copied to clipboard");
                         }}
-                        className="cursor-pointer"
+                        className="cursor-pointer bg-slate-400 border border-slate-500 text-white px-2 py-1 rounded-lg"
                       >
                         {question.author.length > 10
                           ? question.author.substring(0, 10) + "..."
