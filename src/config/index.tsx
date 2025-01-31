@@ -1,12 +1,6 @@
 import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
 import type { AppKitNetwork } from "@reown/appkit/networks";
-import {
-  arbitrum,
-  defineChain,
-  mainnet,
-  mantleSepoliaTestnet,
-  sepolia,
-} from "@reown/appkit/networks";
+import { defineChain } from "@reown/appkit/networks";
 import { cookieStorage, createStorage } from "@wagmi/core";
 
 // Get projectId from https://cloud.reown.com
@@ -46,13 +40,10 @@ export const eduChainTestnet = defineChain({
 });
 
 // for custom networks visit -> https://docs.reown.com/appkit/react/core/custom-networks
-export const networks = [
-  mainnet,
-  eduChainTestnet,
-  arbitrum,
-  sepolia,
-  mantleSepoliaTestnet,
-] as [AppKitNetwork, ...AppKitNetwork[]];
+export const networks = [eduChainTestnet] as [
+  AppKitNetwork,
+  ...AppKitNetwork[]
+];
 
 //Set up the Wagmi Adapter (Config)
 export const wagmiAdapter = new WagmiAdapter({
