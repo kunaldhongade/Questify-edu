@@ -137,7 +137,7 @@ const Navbar = () => {
               >
                 Questions
               </Link>
-              <Link
+              {/* <Link
                 to="/Tags"
                 className="text-xl font-semibold text-gray-800 hover:text-blue-600 transition duration-300"
                 onClick={() => setIsNavOpen(false)}
@@ -150,7 +150,7 @@ const Navbar = () => {
                 onClick={() => setIsNavOpen(false)}
               >
                 Users
-              </Link>
+              </Link> */}
             </div>
 
             {/* Token Balance and Withdraw Button for Mobile */}
