@@ -3,7 +3,6 @@ import "@uiw/react-md-editor/markdown-editor.css";
 import { writeContract } from "@wagmi/core";
 import React, { useState } from "react";
 import toast from "react-hot-toast";
-import rehypeSanitize from "rehype-sanitize";
 import { questifyABI } from "../../abi/questifyABI"; // Import your ABI
 import "../../App.css";
 import LeftSidebar from "../../components/LeftSidebar/LeftSidebar";
@@ -18,15 +17,26 @@ const AskQuestion = () => {
   // const printQuestionBody = (questionBody: string): void => {
   //   console.log(questionBody);
   // };
+  interface CleanMarkdownInput {
+    (input: string): string;
+  }
+
+  const cleanMarkdownInput: CleanMarkdownInput = (input) => {
+    return input
+      .split(/\n/)
+      .filter((line) => line.trim() !== "")
+      .join("\n");
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (questionTitle && questionBody && questionTags.length) {
+      const cleanedData = cleanMarkdownInput(questionBody);
       writeContract(config, {
         address: questifyAddress,
         abi: questifyABI,
         functionName: "postQuestion",
-        args: [questionTitle, questionTags, questionBody],
+        args: [questionTitle, questionTags, cleanedData],
       });
       toast.success("Question posted successfully");
     } else toast.error("Please enter value in all the fields");
@@ -68,14 +78,18 @@ const AskQuestion = () => {
                     <MDEditor
                       value={questionBody}
                       onChange={(value) => setQuestionBody(value || "")}
-                      previewOptions={{
-                        rehypePlugins: [[rehypeSanitize]],
-                      }}
                       data-color-mode="light"
                       height={300}
                       className="rounded-xl"
                     />
                   </label>
+                  <button
+                    onClick={() =>
+                      console.log(cleanMarkdownInput(questionBody))
+                    }
+                  >
+                    print
+                  </button>
                   <label htmlFor="ask-ques-tags" className="block">
                     <h4 className="text-lg font-medium text-gray-700">Tags</h4>
                     <p className="text-sm text-gray-500 mb-2">

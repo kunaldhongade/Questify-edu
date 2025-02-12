@@ -1,4 +1,4 @@
-import MDEditor from "@uiw/react-md-editor";
+import MarkdownPreview from "@uiw/react-markdown-preview";
 import { readContract, writeContract } from "@wagmi/core";
 import moment from "moment";
 import { useEffect, useState } from "react";
@@ -139,12 +139,12 @@ const DisplayAnswer: React.FC<DisplayAnswerProps> = ({
               </button>
             </div>
 
-            <MDEditor.Markdown
+            <MarkdownPreview
               source={answer.content}
               style={{
+                padding: 16,
                 whiteSpace: "pre-wrap",
-                backgroundColor: "black",
-                padding: "1rem",
+                backgroundColor: "#2D2D2D",
                 borderRadius: "1rem",
               }}
             />
