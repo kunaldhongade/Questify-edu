@@ -70,6 +70,10 @@ const HomeMainBar = () => {
           askedOn: new Date(Number(question.timestamp) * 1000).toISOString(), // Convert timestamp to ISO string
         }));
 
+        // setQuestionsData(transformedQuestions);
+        // Sort questions by timestamp in descending order (newest first)
+        transformedQuestions.sort((a, b) => Number(b.id) - Number(a.id));
+
         setQuestionsData(transformedQuestions);
       } catch (error) {
         console.error("Error fetching questions:", error);

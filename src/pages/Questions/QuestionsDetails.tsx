@@ -1,3 +1,4 @@
+import MarkdownPreview from "@uiw/react-markdown-preview";
 import MDEditor from "@uiw/react-md-editor";
 import "@uiw/react-md-editor/markdown-editor.css";
 import { readContract, writeContract } from "@wagmi/core";
@@ -9,12 +10,12 @@ import { AiOutlineMinus, AiOutlinePlus } from "react-icons/ai";
 import { BiSolidDownvote, BiSolidUpvote } from "react-icons/bi";
 import { TfiSharethis } from "react-icons/tfi";
 import { useParams } from "react-router-dom";
-import rehypeSanitize from "rehype-sanitize";
 import { questifyABI } from "../../abi/questifyABI"; // Import your ABI
 import Avatar from "../../components/Avatar/Avatar";
 import Loader from "../../components/Loader/Loader";
 import { config } from "../../config"; // Import your Wagmi config
 import { questifyAddress } from "../../constants"; // Import your contract address
+
 import DisplayAnswer from "./DisplayAnswer";
 type Question = {
   id: bigint;
@@ -73,6 +74,20 @@ const QuestionsDetails = () => {
     fetchQuestionAndAnswers();
   }, [id]);
 
+  interface CleanMarkdownInput {
+    (input: string): string;
+  }
+
+  const cleanMarkdownInput: CleanMarkdownInput = (input) => {
+    return input
+      .split("\n")
+      .filter(
+        (line, index, arr) =>
+          line.trim() !== "" || (index > 0 && arr[index - 1].trim() !== "")
+      )
+      .join("\n");
+  };
+
   // Handle posting an answer
   const handlePostAns = async (e: FormEvent) => {
     e.preventDefault();
@@ -81,12 +96,14 @@ const QuestionsDetails = () => {
       return;
     }
 
+    const cleanedData = cleanMarkdownInput(answer);
+
     try {
       await writeContract(config, {
         address: questifyAddress,
         abi: questifyABI,
         functionName: "postAnswer",
-        args: [BigInt(id ? id : 0), answer], // Convert ID to BigInt
+        args: [BigInt(id ? id : 0), cleanedData], // Convert ID to BigInt
       });
       setAnswer("");
       toast.success("Answer posted successfully");
@@ -221,12 +238,12 @@ const QuestionsDetails = () => {
               </div>
             )}
             <div className="flex-1">
-              <MDEditor.Markdown
+              <MarkdownPreview
                 source={question.content}
                 style={{
+                  padding: 16,
                   whiteSpace: "pre-wrap",
-                  backgroundColor: "#212121",
-                  padding: "1rem",
+                  backgroundColor: "#2D2D2D",
                   borderRadius: "1rem",
                 }}
               />
@@ -315,12 +332,10 @@ const QuestionsDetails = () => {
                 <MDEditor
                   value={answer}
                   onChange={(value) => setAnswer(value || "")}
-                  previewOptions={{
-                    rehypePlugins: [[rehypeSanitize]],
-                  }}
                   data-color-mode="light"
                   height={300}
                   className="rounded-xl"
+                  autoFocus
                 />
                 <button
                   type="submit"
