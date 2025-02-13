@@ -212,12 +212,17 @@ const QuestionsDetails = () => {
   if (!question) return <p className="text-red-500">Question not found</p>;
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen mt-1 md:ml-2">
+    <div className="p-5 bg-gray-50 min-h-screen mt-1 md:ml-2">
       <div key={question.id.toString()}>
         <section className="p-1">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
-            {question.title}
-          </h1>
+          <span className="text-2xl md:text-3xl font-bold text-gray-800">
+            {question.title}{" "}
+          </span>
+
+          <p className="text-sm text-gray-500 bg-gray-50 inline-flex justify-items-end items-end hover:underline">
+            ... {question.category}
+          </p>
+
           <div className="flex flex-col md:flex-row mt-4 gap-6">
             {!isMobile && (
               <div className="flex flex-col items-center">
@@ -250,7 +255,6 @@ const QuestionsDetails = () => {
                   "data-color-mode": "light",
                 }}
                 style={{
-                  padding: "1rem",
                   color: "#333",
                   backgroundColor: "#f8f8f8",
                   borderRadius: "1rem",
@@ -284,9 +288,6 @@ const QuestionsDetails = () => {
                     </div>
                   </div>
                 )}
-                <span className="px-4 py-2 text-sm bg-gray-100 text-gray-800 border border-gray-100 rounded-full shadow-md hover:bg-gray-100 transition-all duration-300 ease-in-out cursor-pointer">
-                  {question.category}
-                </span>
               </div>
               <div className="flex justify-between items-center mt-4">
                 <div className="flex gap-4">
