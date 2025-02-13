@@ -43,6 +43,7 @@ const QuestionsDetails = () => {
   const [answer, setAnswer] = useState<string>("");
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [isVisible, setIsVisible] = useState<boolean>(false);
+  const [isSeeMoreQuestion, setIsSeeMoreQuestion] = useState<boolean>(false);
   const [question, setQuestion] = useState<Question | null>(null);
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -239,7 +240,12 @@ const QuestionsDetails = () => {
             )}
             <div className="flex-1">
               <MarkdownPreview
-                source={question.content}
+                source={
+                  isSeeMoreQuestion
+                    ? question.content
+                    : question.content.substring(0, 500) +
+                      (question.content.length > 500 ? "..." : "")
+                }
                 wrapperElement={{
                   "data-color-mode": "light",
                 }}
@@ -250,6 +256,14 @@ const QuestionsDetails = () => {
                   borderRadius: "1rem",
                 }}
               />
+              {question.content.length > 200 && (
+                <button
+                  onClick={() => setIsSeeMoreQuestion(!isSeeMoreQuestion)}
+                  className="mt-2 text-gray-400 hover:text-blue-300 float-end text-sm"
+                >
+                  {isSeeMoreQuestion ? "... Show Less" : "... Show More"}
+                </button>
+              )}
               <div className="flex flex-wrap gap-2 mt-3 justify-between ">
                 {isMobile && (
                   <div className="flex items-center gap-2">
@@ -300,7 +314,7 @@ const QuestionsDetails = () => {
                           copy(question.author);
                           toast.success("Author name copied to clipboard");
                         }}
-                        className="cursor-pointer bg-slate-400 border border-slate-500 text-white px-2 py-1 rounded-lg"
+                        className="cursor-pointer bg-purple-50-400 border border-slate-400 text-gray-600 px-2 py-1 rounded-full text-sm font-mono"
                       >
                         {question.author.length > 10
                           ? question.author.substring(0, 10) + "..."
@@ -317,14 +331,16 @@ const QuestionsDetails = () => {
         <section className="mt-6">
           <button
             onClick={() => setIsVisible((prev) => !prev)}
-            className="px-4 py-2 bg-gray-100 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-200"
+            className="w-full px-4 py-2 bg-whitesmoke text-gray-700 border border-gray-300 rounded-full hover:bg-gray-50 hover:border-gray-400 transition duration-200"
           >
             {isVisible ? (
               <AiOutlineMinus className="inline" />
             ) : (
               <AiOutlinePlus className="inline" />
             )}{" "}
-            {isVisible ? "Cancel Reply" : "Write a Reply"}
+            <span className="px-2 py-1 text-sm font-medium text-gray-700 rounded-full">
+              {isVisible ? "Cancel Reply" : "Write a Reply"}
+            </span>
           </button>
           {isVisible && (
             <div className="mt-6 p-4 bg-white border border-gray-200 rounded-lg shadow">
