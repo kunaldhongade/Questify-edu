@@ -14,17 +14,17 @@ const AskQuestion = () => {
   const [questionBody, setQuestionBody] = useState("");
   const [questionTags, setQuestionTags] = useState<string[]>([]);
 
-  // const printQuestionBody = (questionBody: string): void => {
-  //   console.log(questionBody);
-  // };
   interface CleanMarkdownInput {
     (input: string): string;
   }
 
   const cleanMarkdownInput: CleanMarkdownInput = (input) => {
     return input
-      .split(/\n/)
-      .filter((line) => line.trim() !== "")
+      .split("\n")
+      .filter(
+        (line, index, arr) =>
+          line.trim() !== "" || (index > 0 && arr[index - 1].trim() !== "")
+      )
       .join("\n");
   };
 
@@ -85,7 +85,11 @@ const AskQuestion = () => {
                   </label>
                   <button
                     onClick={() =>
-                      console.log(cleanMarkdownInput(questionBody))
+                      console.log(
+                        cleanMarkdownInput(questionBody) +
+                          "--------------------" +
+                          questionBody
+                      )
                     }
                   >
                     print

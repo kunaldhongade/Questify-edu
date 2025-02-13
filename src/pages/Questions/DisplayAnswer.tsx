@@ -141,10 +141,13 @@ const DisplayAnswer: React.FC<DisplayAnswerProps> = ({
 
             <MarkdownPreview
               source={answer.content}
+              wrapperElement={{
+                "data-color-mode": "light",
+              }}
               style={{
-                padding: 16,
-                whiteSpace: "pre-wrap",
-                backgroundColor: "#2D2D2D",
+                padding: "1rem",
+                color: "#333",
+                backgroundColor: "whitesmoke",
                 borderRadius: "1rem",
               }}
             />
