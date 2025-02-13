@@ -252,7 +252,7 @@ const QuestionsDetails = () => {
                 style={{
                   padding: "1rem",
                   color: "#333",
-                  backgroundColor: "whitesmoke",
+                  backgroundColor: "#f8f8f8",
                   borderRadius: "1rem",
                 }}
               />

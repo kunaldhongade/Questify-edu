@@ -31,6 +31,7 @@ const DisplayAnswer: React.FC<DisplayAnswerProps> = ({
 }) => {
   const { address } = useAccount();
   const [voteStatus, setVoteStatus] = useState<{ [key: string]: boolean }>({});
+  const [isSeeMoreQuestion, setIsSeeMoreQuestion] = useState<boolean>(false);
   const [loadingStates, setLoadingStates] = useState<{
     [key: string]: boolean;
   }>({});
@@ -140,17 +141,30 @@ const DisplayAnswer: React.FC<DisplayAnswerProps> = ({
             </div>
 
             <MarkdownPreview
-              source={answer.content}
+              source={
+                isSeeMoreQuestion
+                  ? answer.content
+                  : answer.content.substring(0, 500) +
+                    (answer.content.length > 500 ? "..." : "")
+              }
               wrapperElement={{
                 "data-color-mode": "light",
               }}
               style={{
                 padding: "1rem",
                 color: "#333",
-                backgroundColor: "whitesmoke",
+                backgroundColor: "#FAF9F6",
                 borderRadius: "1rem",
               }}
             />
+            {answer.content.length > 200 && (
+              <button
+                onClick={() => setIsSeeMoreQuestion(!isSeeMoreQuestion)}
+                className="mt-2 text-gray-400 hover:text-blue-300 float-end text-sm"
+              >
+                {isSeeMoreQuestion ? "... Show Less" : "... Show More"}
+              </button>
+            )}
 
             <div className="flex items-center gap-4 mt-4">
               <button
